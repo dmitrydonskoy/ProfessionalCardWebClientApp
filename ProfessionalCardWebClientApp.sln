@@ -5,7 +5,9 @@ VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProfessionalCardWebClientApp", "ProfessionalCardWebClientApp.csproj", "{AB54683D-4C36-4463-8E93-566B4839098F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfessionalCardRestAPI", "..\ProfessionalCardRestAPI\ProfessionalCardRestAPI.csproj", "{0C8F7CC2-0332-44F2-AAD7-76E0EF2B4502}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProfessionalCardRestAPI", "..\ProfessionalCardRestAPI\ProfessionalCardRestAPI.csproj", "{0C8F7CC2-0332-44F2-AAD7-76E0EF2B4502}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfessionalCardModels", "..\ProfessionalCardModels\ProfessionalCardModels.csproj", "{168614B5-39B7-4607-9DB1-BD210CD58122}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{0C8F7CC2-0332-44F2-AAD7-76E0EF2B4502}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C8F7CC2-0332-44F2-AAD7-76E0EF2B4502}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C8F7CC2-0332-44F2-AAD7-76E0EF2B4502}.Release|Any CPU.Build.0 = Release|Any CPU
+		{168614B5-39B7-4607-9DB1-BD210CD58122}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{168614B5-39B7-4607-9DB1-BD210CD58122}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{168614B5-39B7-4607-9DB1-BD210CD58122}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{168614B5-39B7-4607-9DB1-BD210CD58122}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

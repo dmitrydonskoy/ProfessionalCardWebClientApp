@@ -1,0 +1,241 @@
+﻿@{
+    ViewData["Title"] = "Карта профессий";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<!-- Фильтр категорий -->
+<div id="filter-container" style="margin-bottom: 20px;">
+    <h3>Фильтр категорий</h3>
+    <button onclick="selectAllCategories()">Выбрать все</button>
+    <button onclick="clearAllCategories()">Очистить</button>
+    <br>
+    <ul id="category-filters" style="list-style-type: none; padding: 0;"></ul>
+</div>
+
+<!-- Контейнер для отображения графа -->
+<div id="profession-network" style="width: 100%; height: 600px; border: 1px solid lightgray;"></div>
+
+<!-- Модальное окно -->
+<div id="profession-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <button id="back-button" onclick="goBack()" style="display: none;">← Назад</button>
+        <h2 id="modal-title"></h2>
+        <p id="modal-description"></p>
+        <h3>Легенда категорий</h3>
+        <ul id="modal-legend"></ul>
+        <h3>Связанные профессии</h3>
+        <div id="related-profession-network" style="width: 100%; height: 400px; border: 1px solid lightgray;"></div>
+    </div>
+</div>
+
+<!-- Стили для модального окна -->
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 20px;
+        width: 60%;
+        border-radius: 5px;
+    }
+
+    .close {
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    #back-button {
+        margin-bottom: 10px;
+    }
+</style>
+
+<script type="text/javascript">
+    // Глобальные функции
+    function closeModal() {
+        document.getElementById("profession-modal").style.display = "none";
+        professionHistory = []; // Очищаем историю при закрытии модального окна
+    }
+
+    function goBack() {
+        if (professionHistory.length > 1) {
+            professionHistory.pop(); // Удаляем текущую профессию из истории
+            const previousProfession = professionHistory[professionHistory.length - 1];
+            showModal(previousProfession); // Показываем предыдущую профессию
+        } else {
+            closeModal(); // Если история пуста, закрываем модальное окно
+        }
+    }
+
+    function selectAllCategories() {
+        const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateGraph(); // Обновляем граф после выбора всех категорий
+    }
+
+    function clearAllCategories() {
+        const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateGraph(); // Обновляем граф после очистки всех категорий
+    }
+
+    // Инициализация
+    document.addEventListener("DOMContentLoaded", function () {
+        let professionHistory = [];
+
+        const professions = @Html.Raw(Json.Serialize(Model.Professions)) || [];
+        const relations = @Html.Raw(Json.Serialize(Model.Relations)) || [];
+
+        if (professions.length === 0) {
+            console.error("Данные профессий не были переданы на фронт.");
+            alert("Данные профессий отсутствуют.");
+            return;
+        }
+
+        const categoryColors = {
+            'Техподдержка': '#ff6666',
+            'Аппаратная разработка': '#ff7f7f',
+            'Системное администрирование': '#66cc66',
+            'Информационная безопасность': '#66ccff',
+            'Тестирование и управление качеством': '#ffcc00',
+            'Создание цифрового продукта': '#66cc66',
+            'Данные и аналитика': '#99cc00',
+            'Управление разработкой и архитектурой': '#66b3b3',
+            'Дизайн и UX/UI': '#b3b3ff'
+        };
+
+        const categories = [...new Set(professions.map(prof => prof.category))];
+
+        const filterContainer = document.getElementById('category-filters');
+        categories.forEach(category => {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = category;
+            checkbox.checked = true;
+            checkbox.onchange = updateGraph;
+
+            const label = document.createElement('label');
+            label.innerHTML = `⬤ ${category}`;
+            label.style.color = categoryColors[category] || '#000000';
+            label.style.marginLeft = '5px';
+
+            const listItem = document.createElement('li');
+            listItem.appendChild(checkbox);
+            listItem.appendChild(label);
+            filterContainer.appendChild(listItem);
+        });
+
+        let nodes = new vis.DataSet();
+        let edges = new vis.DataSet();
+
+        function updateGraph() {
+            const selectedCategories = Array.from(document.querySelectorAll('#category-filters input:checked'))
+                .map(checkbox => checkbox.value);
+
+            const filteredNodes = professions
+                .filter(prof => selectedCategories.includes(prof.category))
+                .map(prof => ({
+                    id: prof.id,
+                    label: prof.name,
+                    title: `${prof.name} - ${prof.description}`,
+                    shape: 'box',
+                    color: categoryColors[prof.category] || '#cccccc',
+                }));
+
+            nodes.clear();
+            nodes.add(filteredNodes);
+
+            const filteredEdges = relations
+                .filter(relation =>
+                    relation.relationType === "равная" &&
+                    filteredNodes.some(node => node.id === relation.sourceProfessionId) &&
+                    filteredNodes.some(node => node.id === relation.targetProfessionId)
+                )
+                .map(relation => ({
+                    from: relation.sourceProfessionId,
+                    to: relation.targetProfessionId,
+                    arrows: 'from, to',
+                    color: { color: '#999999' },
+                }));
+
+            edges.clear();
+            edges.add(filteredEdges);
+        }
+
+        const container = document.getElementById('profession-network');
+        const data = { nodes: nodes, edges: edges };
+        const options = { layout: { hierarchical: false }, physics: { enabled: true } };
+        const network = new vis.Network(container, data, options);
+
+        network.on("click", function (params) {
+            if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const profession = professions.find(p => p.id === nodeId);
+                if (profession) {
+                    professionHistory = [profession]; // Сбрасываем историю при новом клике
+                    showModal(profession);
+                }
+            }
+        });
+
+        function showModal(profession) {
+            document.getElementById("modal-title").innerText = profession.name;
+            document.getElementById("modal-description").innerText = profession.description;
+            document.getElementById("profession-modal").style.display = "block";
+
+            const relatedNodes = [profession].concat(professions.filter(p =>
+                relations.some(r =>
+                    (r.sourceProfessionId === profession.id && r.targetProfessionId === p.id) ||
+                    (r.targetProfessionId === profession.id && r.sourceProfessionId === p.id)
+                )
+            ));
+
+            const relatedEdges = relations.filter(r =>
+                r.sourceProfessionId === profession.id || r.targetProfessionId === profession.id
+            ).map(r => ({
+                from: r.sourceProfessionId,
+                to: r.targetProfessionId,
+                arrows: 'from, to',
+                color: { color: '#999999' }
+            }));
+
+            const relatedNodesData = new vis.DataSet(relatedNodes.map(p => ({
+                id: p.id, label: p.name, shape: 'box', color: categoryColors[p.category] || '#cccccc'
+            })));
+            const relatedEdgesData = new vis.DataSet(relatedEdges);
+
+            const relatedContainer = document.getElementById("related-profession-network");
+            const relatedNetwork = new vis.Network(relatedContainer, { nodes: relatedNodesData, edges: relatedEdgesData }, options);
+
+            relatedNetwork.on("click", function (params) {
+                if (params.nodes.length > 0) {
+                    const newProfession = professions.find(p => p.id === params.nodes[0]);
+                    if (newProfession) {
+                        professionHistory.push(newProfession);
+                        showModal(newProfession);
+                        document.getElementById("back-button").style.display = "block";
+                    }
+                }
+            });
+        }
+
+        updateGraph();
+    });
+</script>
