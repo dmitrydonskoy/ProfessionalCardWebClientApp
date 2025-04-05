@@ -1,5 +1,7 @@
-var builder = WebApplication.CreateBuilder(args);
+using ProfessionalCardWebClientApp.Controllers;
 
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddHttpClient<ProfessionGraphController>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
