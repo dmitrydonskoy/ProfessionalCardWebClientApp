@@ -1,0 +1,247 @@
+﻿@model CareerPathViewModel
+@using ProfessionalCardWebClientApp.DTO
+
+@{
+    ViewData["Title"] = "Карьерный путь";
+}
+
+<div class="container">
+    <h2>Карьерный путь</h2>
+
+    <!-- Выбор профессии -->
+    <form method="get" asp-controller="Career" asp-action="Index" class="mb-4">
+        <label for="targetProfessionId" class="form-label">Выберите целевую профессию:</label>
+        <div class="input-group">
+            <select name="targetProfessionId" id="targetProfessionId" class="form-select">
+              @foreach (var prof in Model.AvailableProfessions)
+{
+    if (prof.Id == Model.SelectedProfessionId)
+    {
+        <option value="@prof.Id" selected>@prof.Name (@prof.Category)</option>
+    }
+    else
+    {
+        <option value="@prof.Id">@prof.Name (@prof.Category)</option>
+    }
+}
+            </select>
+            <button type="submit" class="btn btn-primary">Сгенерировать путь</button>
+        </div>
+    </form>
+
+    @if (Model.CareerPath != null)
+    {
+        <button id="downloadBtn" class="btn btn-success mb-3">Скачать PNG</button>
+
+        <div id="roadmap-container">
+            <!-- Легенда категорий -->
+            <div class="category-legend">
+                <h4>Категории:</h4>
+                <ul>
+                    <li><span class="legend-color cloud"></span> Облачные технологии</li>
+                    <li><span class="legend-color container"></span> Контейнеризация</li>
+                    <li><span class="legend-color microservice"></span> Микросервисная архитектура</li>
+                    <li><span class="legend-color network"></span> Сетевые технологии</li>
+                    <li><span class="legend-color database"></span> Базы данных</li>
+                    <li><span class="legend-color queue"></span> Системы очередей</li>
+                    <li><span class="legend-color webserver"></span> Веб-серверы</li>
+                    <li><span class="legend-color api"></span> API-технологии</li>
+                    <li><span class="legend-color framework"></span> Фреймворки</li>
+                    <li><span class="legend-color iot"></span> IoT-технологии</li>
+                </ul>
+            </div>
+
+            <!-- Карьерный путь -->
+            @foreach (var level in new[] { "Junior", "Middle", "Senior", "Manager" })
+            {
+                var levelSkills = level switch
+                {
+                    "Junior" => Model.CareerPath.JuniorSkills,
+                    "Middle" => Model.CareerPath.MiddleSkills,
+                    "Senior" => Model.CareerPath.SeniorSkills,
+                    "Manager" => Model.CareerPath.ManagerSkills,
+                    _ => new List<SkillDTO>()
+                };
+
+                if (levelSkills != null && levelSkills.Any())
+                {
+                    <div class="roadmap-level">
+                        <h3 class="level-title">@level</h3>
+                        <div class="skills-row">
+                            @foreach (var skill in levelSkills)
+                            {
+                                <div class="skill-card"
+                                     data-bs-toggle="modal"
+                                     data-bs-target="#skillModal"
+                                     data-skill-name="@skill.Name"
+                                     data-skill-description="@skill.Description"
+                                     data-category="@skill.Category">
+                                    <h4>@skill.Name</h4>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- Модальное окно -->
+            <div class="modal fade" id="skillModal" tabindex="-1" aria-labelledby="skillModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="skillModalLabel">Навык</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="skillDescription"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        document.getElementById("downloadBtn")?.addEventListener("click", function () {
+            const roadmap = document.getElementById("roadmap-container");
+
+            if (!roadmap) {
+                alert("Контейнер с ID 'roadmap-container' не найден.");
+                return;
+            }
+
+            html2canvas(roadmap).then(function (canvas) {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL("image/png");
+                link.download = "career-roadmap.png";
+                link.click();
+            });
+        });
+
+        $('#skillModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            const name = button.data('skill-name');
+            const description = button.data('skill-description');
+
+            const modal = $(this);
+            modal.find('.modal-title').text(name);
+            modal.find('#skillDescription').text(description);
+        });
+
+        $(document).ready(function () {
+            $(".skill-card").each(function () {
+                const category = $(this).data('category');
+                const card = $(this);
+                switch (category) {
+                    case "Облачные технологии": card.addClass("cloud"); break;
+                    case "Контейнеризация": card.addClass("container"); break;
+                    case "Микросервисная архитектура": card.addClass("microservice"); break;
+                    case "Сетевые технологии": card.addClass("network"); break;
+                    case "Базы данных": card.addClass("database"); break;
+                    case "Системы очередей": card.addClass("queue"); break;
+                    case "Веб-серверы": card.addClass("webserver"); break;
+                    case "API-технологии": card.addClass("api"); break;
+                    case "Фреймворки": card.addClass("framework"); break;
+                    case "IoT-технологии": card.addClass("iot"); break;
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+    .container { background-color: transparent; }
+
+    .category-legend {
+        margin-bottom: 30px;
+    }
+
+    .category-legend h4 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+
+    .category-legend ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .category-legend li {
+        font-size: 1rem;
+        margin: 5px 0;
+    }
+
+    .category-legend .legend-color {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .cloud { background-color: #a1c4fd; }
+    .container { background-color: #ffb6b9; }
+    .microservice { background-color: #f8e16c; }
+    .network { background-color: #ffad60; }
+    .database { background-color: #6cc1a0; }
+    .queue { background-color: #ffe156; }
+    .webserver { background-color: #e3a7ea; }
+    .api { background-color: #d8b3d6; }
+    .framework { background-color: #5f87e7; }
+    .iot { background-color: #d1f2a5; }
+
+    .skill-card {
+        border-radius: 8px;
+        padding: 20px;
+        width: 250px;
+        height: 250px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+
+    .skill-card h4 {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+        text-align: center;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    .skill-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .roadmap-level {
+        margin-bottom: 30px;
+    }
+
+    .level-title {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+
+    .skills-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 20px;
+        padding: 20px;
+        width: 100%;
+    }
+</style>
