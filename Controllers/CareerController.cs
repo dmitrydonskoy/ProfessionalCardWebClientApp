@@ -16,7 +16,7 @@ namespace ProfessionalCardWebClientApp.Controllers
 
         public async Task<IActionResult> Index(int? targetProfessionId)
         {
-            // Получаем список профессий
+      
             var professionsResponse = await _httpClient.GetAsync("https://localhost:7212/api/profession");
             if (!professionsResponse.IsSuccessStatusCode)
             {
@@ -39,11 +39,10 @@ namespace ProfessionalCardWebClientApp.Controllers
                 SelectedProfessionId = targetProfessionId
             };
 
-            // Если профессию не выбрали — только отобразим список
             if (targetProfessionId == null)
                 return View(viewModel);
 
-            // Иначе подгружаем карьерный путь
+         
             var apiUrl = $"https://localhost:7212/api/CareerPath/generate?targetProfessionId={targetProfessionId}";
             var response = await _httpClient.GetAsync(apiUrl);
 
