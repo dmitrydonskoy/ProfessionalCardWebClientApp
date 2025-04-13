@@ -4,7 +4,7 @@
 
 <h1>@ViewData["Title"]</h1>
 
-<!-- Фильтр категорий -->
+
 <div id="filter-container" style="margin-bottom: 20px;">
     <h3>Фильтр категорий</h3>
     <button onclick="selectAllCategories()">Выбрать все</button>
@@ -12,11 +12,11 @@
     <br>
     <ul id="category-filters" style="list-style-type: none; padding: 0;"></ul>
 </div>
+<button onclick="toggleFullscreen()" style="margin-bottom: 15px;">Полноэкранный режим</button>
 
-<!-- Контейнер для отображения графа -->
 <div id="profession-network" style="width: 100%; height: 600px; border: 1px solid lightgray;"></div>
 
-<!-- Модальное окно -->
+
 <div id="profession-modal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
@@ -30,7 +30,7 @@
     </div>
 </div>
 
-<!-- Стили для модального окна -->
+
 <style>
     .modal {
         display: none;
@@ -61,22 +61,34 @@
     #back-button {
         margin-bottom: 10px;
     }
+
+    #profession-network {
+        width: 100%;
+        height: 90vh; /* 90% высоты экрана */
+        border: 1px solid lightgray;
+        margin-bottom: 30px;
+    }
+
+        #profession-network:fullscreen {
+            width: 100vw;
+            height: 100vh;
+        }
 </style>
 
 <script type="text/javascript">
     // Глобальные функции
     function closeModal() {
         document.getElementById("profession-modal").style.display = "none";
-        professionHistory = []; // Очищаем историю при закрытии модального окна
+        professionHistory = []; 
     }
 
     function goBack() {
         if (professionHistory.length > 1) {
-            professionHistory.pop(); // Удаляем текущую профессию из истории
+            professionHistory.pop();
             const previousProfession = professionHistory[professionHistory.length - 1];
-            showModal(previousProfession); // Показываем предыдущую профессию
+            showModal(previousProfession);
         } else {
-            closeModal(); // Если история пуста, закрываем модальное окно
+            closeModal(); 
         }
     }
 
@@ -85,7 +97,7 @@
         checkboxes.forEach(checkbox => {
             checkbox.checked = true;
         });
-        updateGraph(); // Обновляем граф после выбора всех категорий
+        updateGraph(); 
     }
 
     function clearAllCategories() {
@@ -93,10 +105,10 @@
         checkboxes.forEach(checkbox => {
             checkbox.checked = false;
         });
-        updateGraph(); // Обновляем граф после очистки всех категорий
+        updateGraph(); 
     }
 
-    // Инициализация
+   
     document.addEventListener("DOMContentLoaded", function () {
         let professionHistory = [];
 
@@ -149,39 +161,103 @@
             const selectedCategories = Array.from(document.querySelectorAll('#category-filters input:checked'))
                 .map(checkbox => checkbox.value);
 
-            const filteredNodes = professions
-                .filter(prof => selectedCategories.includes(prof.category))
-                .map(prof => ({
-                    id: prof.id,
-                    label: prof.name,
-                    title: `${prof.name} - ${prof.description}`,
-                    shape: 'box',
-                    color: categoryColors[prof.category] || '#cccccc',
-                }));
-
             nodes.clear();
-            nodes.add(filteredNodes);
-
-            const filteredEdges = relations
-                .filter(relation =>
-                    relation.relationType === "равная" &&
-                    filteredNodes.some(node => node.id === relation.sourceProfessionId) &&
-                    filteredNodes.some(node => node.id === relation.targetProfessionId)
-                )
-                .map(relation => ({
-                    from: relation.sourceProfessionId,
-                    to: relation.targetProfessionId,
-                    arrows: 'from, to',
-                    color: { color: '#999999' },
-                }));
-
             edges.clear();
-            edges.add(filteredEdges);
+
+       
+            nodes.add({
+                id: 'root',
+                label: 'Карта профессий',
+                shape: 'circle',
+                color: '#333399',
+                font: { color: '#ffffff', size: 22, bold: true },
+                margin: 20
+            });
+
+    
+            const categoryNodes = selectedCategories.map(category => ({
+                id: `cat-${category}`,
+                label: category,
+                shape: 'box',
+                color: {
+                    background: categoryColors[category] || '#cccccc',
+                    border: '#333333',
+                    highlight: {
+                        background: categoryColors[category] || '#cccccc',
+                        border: '#000000'
+                    }
+                },
+                font: {
+                    size: 18,
+                    bold: true,
+                    color: '#000000'
+                },
+                margin: 20
+            }));
+
+            nodes.add(categoryNodes);
+
+            const categoryEdges = selectedCategories.map(category => ({
+                from: 'root',
+                to: `cat-${category}`,
+                arrows: 'to',
+                color: { color: '#6666cc' }
+            }));
+
+            edges.add(categoryEdges);
+
+            const filteredProfessions = professions.filter(p => selectedCategories.includes(p.category));
+            const professionNodes = filteredProfessions.map(p => ({
+                id: p.id,
+                label: p.name,
+                title: `${p.name} - ${p.description}`,
+                shape: 'box',
+                color: categoryColors[p.category] || '#cccccc',
+                font: {
+                    size: 16
+                },
+                margin: 15
+            }));
+
+            const professionEdges = filteredProfessions.map(p => ({
+                from: `cat-${p.category}`,
+                to: p.id,
+                arrows: 'to',
+                color: { color: '#999999' }
+            }));
+
+            nodes.add(professionNodes);
+            edges.add(professionEdges);
         }
+
 
         const container = document.getElementById('profession-network');
         const data = { nodes: nodes, edges: edges };
-        const options = { layout: { hierarchical: false }, physics: { enabled: true } };
+
+        const options = {
+            layout: {
+                improvedLayout: true
+            },
+            physics: {
+                enabled: true,
+                solver: 'repulsion',
+                repulsion: {
+                    nodeDistance: 300,
+                    springLength: 200,
+                    springConstant: 0.01,
+                    damping: 0.09
+                },
+                stabilization: {
+                    iterations: 250
+                }
+            },
+            interaction: {
+                dragNodes: true,
+                zoomView: true,
+                hover: true
+            }
+        };
+
         const network = new vis.Network(container, data, options);
 
         network.on("click", function (params) {
@@ -189,7 +265,7 @@
                 const nodeId = params.nodes[0];
                 const profession = professions.find(p => p.id === nodeId);
                 if (profession) {
-                    professionHistory = [profession]; // Сбрасываем историю при новом клике
+                    professionHistory = [profession]; 
                     showModal(profession);
                 }
             }
@@ -238,4 +314,25 @@
 
         updateGraph();
     });
+    function toggleFullscreen() {
+        const container = document.getElementById('profession-network');
+
+        if (!document.fullscreenElement) {
+         
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            } else if (container.mozRequestFullScreen) {
+                container.mozRequestFullScreen(); 
+            } else if (container.webkitRequestFullscreen) {
+                container.webkitRequestFullscreen(); 
+            } else if (container.msRequestFullscreen) {
+                container.msRequestFullscreen(); 
+            }
+        } else {
+           
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
 </script>
