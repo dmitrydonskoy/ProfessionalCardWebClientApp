@@ -8,23 +8,54 @@
 <div class="container">
     <h2>Карьерный путь</h2>
 
-
     <form method="get" asp-controller="Career" asp-action="Index" class="mb-4">
-        <label for="targetProfessionId" class="form-label">Выберите целевую профессию:</label>
+        <label for="currentProfession" class="form-label">Выберите текущую профессию и уровень:</label>
         <div class="input-group">
-            <select name="targetProfessionId" id="targetProfessionId" class="form-select">
-              @foreach (var prof in Model.AvailableProfessions)
-{
-    if (prof.Id == Model.SelectedProfessionId)
-    {
-        <option value="@prof.Id" selected>@prof.Name (@prof.Category)</option>
-    }
-    else
-    {
-        <option value="@prof.Id">@prof.Name (@prof.Category)</option>
-    }
-}
+            <select name="selectedCurrentProfessionName" id="currentProfession" class="form-select">
+                @foreach (var prof in Model.AvailableProfessions)
+                {
+                    @if (prof.Name == Model.SelectedCurrentProfessionName)
+                    {
+                        <option value="@prof.Name" selected>@prof.Name (@prof.Category)</option>
+                    }
+                    else
+                    {
+                        <option value="@prof.Name">@prof.Name (@prof.Category)</option>
+                    }
+                }
             </select>
+
+            <select name="selectedCurrentProfessionLevel" class="form-select">
+                @{
+                    var levels = new List<string> { "Junior", "Middle", "Senior", "Manager" };
+                    foreach (var level in levels)
+                    {
+                        @if (level == Model.SelectedCurrentProfessionLevel)
+                        {
+                            <option value="@level" selected>@level</option>
+                        }
+                        else
+                        {
+                            <option value="@level">@level</option>
+                        }
+                    }
+                }
+            </select>
+
+            <select name="targetProfessionId" id="targetProfessionId" class="form-select">
+                @foreach (var prof in Model.AvailableProfessions)
+                {
+                    @if (prof.Id == Model.SelectedProfessionId)
+                    {
+                        <option value="@prof.Id" selected>@prof.Name (@prof.Category)</option>
+                    }
+                    else
+                    {
+                        <option value="@prof.Id">@prof.Name (@prof.Category)</option>
+                    }
+                }
+            </select>
+
             <button type="submit" class="btn btn-primary">Сгенерировать путь</button>
         </div>
     </form>
@@ -38,16 +69,17 @@
             <div class="category-legend">
                 <h4>Категории:</h4>
                 <ul>
-                    <li><span class="legend-color cloud"></span> Облачные технологии</li>
-                    <li><span class="legend-color container"></span> Контейнеризация</li>
-                    <li><span class="legend-color microservice"></span> Микросервисная архитектура</li>
-                    <li><span class="legend-color network"></span> Сетевые технологии</li>
-                    <li><span class="legend-color database"></span> Базы данных</li>
-                    <li><span class="legend-color queue"></span> Системы очередей</li>
-                    <li><span class="legend-color webserver"></span> Веб-серверы</li>
-                    <li><span class="legend-color api"></span> API-технологии</li>
-                    <li><span class="legend-color framework"></span> Фреймворки</li>
-                    <li><span class="legend-color iot"></span> IoT-технологии</li>
+                    <li><span class="legend-color cloud"></span> Облачные технологии <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color container"></span> Контейнеризация <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color microservice"></span> Микросервисная архитектура <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color network"></span> Сетевые технологии <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color database"></span> Базы данных <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color queue"></span> Системы очередей <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color webserver"></span> Веб-серверы <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color api"></span> API-технологии <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color framework"></span> Фреймворки <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color iot"></span> IoT-технологии <span class="legend-icon">+</span></li>
+                    <li><span class="legend-color not-learned"></span> Неизучено <span class="legend-icon">×</span></li>
                 </ul>
             </div>
 
@@ -69,19 +101,29 @@
                         <div class="skills-row">
                             @foreach (var skill in levelSkills)
                             {
-                                <div class="skill-card"
+                                <div class="skill-card @(skill.HasSkill == true ? "has-skill" : "not-learned")"
                                      data-bs-toggle="modal"
                                      data-bs-target="#skillModal"
                                      data-skill-name="@skill.Name"
                                      data-skill-description="@skill.Description"
                                      data-category="@skill.Category">
                                     <h4>@skill.Name</h4>
+                                    <span class="icon">@if (skill.HasSkill == true)
+                                        {
+                                            <span>+</span>
+                                        }
+                                        else
+                                        {
+                                            <span>×</span>
+                                        }</span>
                                 </div>
                             }
                         </div>
                     </div>
                 }
             }
+        </div>
+  
 
             <div class="modal fade" id="skillModal" tabindex="-1" aria-labelledby="skillModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -99,8 +141,10 @@
                     </div>
                 </div>
             </div>
-        </div>
+        
+        
     }
+   
 </div>
 
 @section Scripts {
@@ -194,24 +238,43 @@
     .framework { background-color: #5f87e7; }
     .iot { background-color: #d1f2a5; }
 
+    
+
+    .legend-icon {
+        font-weight: bold;
+        color: green; /* для "+" */
+    }
+
+    .legend-color.not-learned {
+        background-color: #f8d7da;
+    }
+
+    .has-skill {
+        background-color: #28a745; /* Зеленый для навыков, которые есть у пользователя */
+    }
+
+    .not-learned {
+        background-color: #f8d7da; /* Красный для неизученных */
+    }
+
+    .icon {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-size: 18px;
+    }
+
     .skill-card {
-        border-radius: 8px;
+        position: relative;
         padding: 20px;
         width: 250px;
         height: 250px;
+        border-radius: 8px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
         transition: transform 0.3s ease;
         margin: 10px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-        word-wrap: break-word;
     }
-
     .skill-card h4 {
         font-size: 16px;
         font-weight: 500;

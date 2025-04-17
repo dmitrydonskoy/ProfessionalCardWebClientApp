@@ -13,10 +13,9 @@ namespace ProfessionalCardWebClientApp.Controllers
         {
             _httpClient = httpClient;
         }
-
-        public async Task<IActionResult> Index(int? targetProfessionId)
+        public async Task<IActionResult> Index(int? targetProfessionId, string selectedCurrentProfessionName, string selectedCurrentProfessionLevel)
         {
-      
+            // Запрос профессий
             var professionsResponse = await _httpClient.GetAsync("https://localhost:7212/api/profession");
             if (!professionsResponse.IsSuccessStatusCode)
             {
@@ -33,17 +32,38 @@ namespace ProfessionalCardWebClientApp.Controllers
             var allProfessions = JsonSerializer.Deserialize<List<ProfessionDTO>>(professionsJson, options);
             var availableProfessions = allProfessions.Where(p => string.IsNullOrEmpty(p.Level)).ToList();
 
+            // Формируем модель для отображения
             var viewModel = new CareerPathViewModel
             {
                 AvailableProfessions = availableProfessions,
                 SelectedProfessionId = targetProfessionId
             };
 
-            if (targetProfessionId == null)
+            // Если профессия не выбрана или данные о текущей профессии не введены, возвращаем только форму с профессиями
+            if (targetProfessionId == null || string.IsNullOrEmpty(selectedCurrentProfessionName) || string.IsNullOrEmpty(selectedCurrentProfessionLevel))
+            {
                 return View(viewModel);
+            }
 
-         
-            var apiUrl = $"https://localhost:7212/api/CareerPath/generate?targetProfessionId={targetProfessionId}";
+            // Находим текущую профессию по имени и уровню, если они заданы
+            var selectedCurrentProfession = allProfessions
+                .FirstOrDefault(p => p.Name == selectedCurrentProfessionName && p.Level == selectedCurrentProfessionLevel);
+
+            // Если текущая профессия не найдена, возвращаем ошибку
+            if (selectedCurrentProfession == null)
+            {
+                return View("Error"); // Или верните на страницу выбора профессий
+            }
+
+            // Обновляем модель с выбранной текущей профессией
+            viewModel.SelectedCurrentProfessionId = selectedCurrentProfession.Id;
+            viewModel.SelectedCurrentProfessionName = selectedCurrentProfession.Name;
+            viewModel.SelectedCurrentProfessionLevel = selectedCurrentProfessionLevel;
+
+            // Формируем запрос для генерации карьерного пути с учётом текущей профессии и уровня
+            var apiUrl = $"https://localhost:7212/api/CareerPath/generate?" +
+                         $"targetProfessionId={targetProfessionId}&" +
+                         $"currentProfessionId={selectedCurrentProfession.Id}";
             var response = await _httpClient.GetAsync(apiUrl);
 
             if (!response.IsSuccessStatusCode)
@@ -54,5 +74,6 @@ namespace ProfessionalCardWebClientApp.Controllers
 
             return View(viewModel);
         }
+
     }
 }
