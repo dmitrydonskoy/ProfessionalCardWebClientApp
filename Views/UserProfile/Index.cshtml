@@ -1,0 +1,38 @@
+﻿@model ProfessionalCardWebClientApp.DTO.UserProfileDTO
+
+@{
+    ViewData["Title"] = "Профиль пользователя";
+}
+
+<h2>Профиль пользователя</h2>
+
+<p><strong>Имя:</strong> @Model.Name</p>
+<p><strong>Email:</strong> @Model.Email</p>
+<p><strong>Текущая профессия:</strong> @Model.CurrentProfession?.Name ?? "Не выбрана"</p>
+
+<h3>Избранные профессии:</h3>
+@if (Model.FavoriteProfessions != null && Model.FavoriteProfessions.Any())
+{
+    <div class="row">
+        @foreach (var profession in Model.FavoriteProfessions)
+        {
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">@profession.Name</h5>
+                        <p class="card-text"><strong>Категория:</strong> @profession.Category</p>
+                        <form method="post" asp-action="RemoveFromFavorites">
+                            <input type="hidden" name="userId" value="@Model.Id" />
+                            <input type="hidden" name="professionId" value="@profession.Id" />
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>Избранных профессий нет.</p>
+}

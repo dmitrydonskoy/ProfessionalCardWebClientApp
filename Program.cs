@@ -2,8 +2,11 @@ using ProfessionalCardWebClientApp.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient<ProfessionGraphController>();
+builder.Services.AddHttpClient<AuthController>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -17,7 +20,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseSession();
 app.UseRouting();
 
 app.UseAuthorization();
