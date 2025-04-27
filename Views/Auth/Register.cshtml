@@ -1,0 +1,26 @@
+﻿@page
+@model ProfessionalCardWebClientApp.DTO.RegistrationModel
+
+<form method="post">
+    <div class="form-group">
+        <label for="Name">Имя</label>
+        <input type="text" class="form-control" id="Name" name="Name" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Email">Электронная почта</label>
+        <input type="email" class="form-control" id="Email" name="Email" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Password">Пароль</label>
+        <input type="password" class="form-control" id="Password" name="Password" required />
+    </div>
+
+    <div class="form-group">
+        <label for="ConfirmPassword">Подтверждение пароля</label>
+        <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+</form>
