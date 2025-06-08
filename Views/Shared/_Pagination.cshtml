@@ -1,0 +1,51 @@
+﻿@model ProfessionalCardWebClientApp.DTO.PaginationModel
+
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center">
+
+            @* Кнопка "Назад" *@
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@BuildPageUrl(Model.PageNumber - 1)">«</a>
+                </li>
+            }
+
+            @* Номера страниц *@
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                    <a class="page-link" href="@BuildPageUrl(i)">@i</a>
+                </li>
+            }
+
+            @* Кнопка "Вперед" *@
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@BuildPageUrl(Model.PageNumber + 1)">»</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+@functions {
+    private string BuildPageUrl(int page)
+    {
+        var query = new Dictionary<string, string>(Model.Filters ?? new());
+
+        query["page"] = page.ToString();
+
+        if (!string.IsNullOrEmpty(Model.Tab))
+            query["tab"] = Model.Tab;
+
+        var queryString = string.Join("&", query
+            .Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
+            .Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+
+        return $"?{queryString}";
+    }
+}

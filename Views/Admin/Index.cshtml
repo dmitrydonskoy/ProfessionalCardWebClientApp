@@ -1,0 +1,239 @@
+﻿@using ProfessionalCardWebClientApp.DTO
+@model AdminPanelViewModel
+@{
+    ViewData["Title"] = "Администрирование";
+    var activeTab = ViewBag.ActiveTab as string ?? "skills";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<h2 class="mt-3 mb-4">Панель администратора</h2>
+
+<ul class="nav nav-tabs mb-3" id="adminTabs">
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "skills" ? "active" : "")" href="?tab=skills">Навыки</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "professions" ? "active" : "")" href="?tab=professions">Профессии</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "relations" ? "active" : "")" href="?tab=relations">Связи профессий</a>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- === НАВЫКИ === -->
+    <div class="tab-pane fade @(activeTab == "skills" ? "show active" : "")" id="skills">
+        <h4>Навыки</h4>
+
+        <form method="get" class="row g-2 mb-3">
+            <input type="hidden" name="tab" value="skills" />
+            <div class="col-md-4">
+                <input type="text" name="skillSearchTerm" class="form-control" placeholder="Название навыка" value="@Model.SkillSearchTerm">
+            </div>
+            <div class="col-md-4">
+                <select name="skillCategoryFilter" class="form-select">
+                    <option value="">Все категории</option>
+                    <option value="IT-skills" selected="@("IT-skills" == Model.SkillCategoryFilter)">IT-skills</option>
+                    <option value="Experience" selected="@("Experience" == Model.SkillCategoryFilter)">Опыт</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary w-100">Фильтровать</button>
+            </div>
+        </form>
+
+        <div class="table-wrapper overflow-auto" style="max-height: 500px;">
+            @await Html.PartialAsync("_SkillsTable", Model.PagedSkills)
+        </div>
+        <div class="mt-3">
+            @await Html.PartialAsync("_Pagination", ViewBag.SkillPagination as PaginationModel)
+        </div>
+
+        <!-- === ДОБАВЛЕНИЕ НАВЫКА === -->
+        <hr />
+        <h5>Добавить навык</h5>
+        <form method="post" asp-action="AddSkill">
+            <div class="row g-2 mb-3">
+                <div class="col-md-5">
+                    <input name="Name" class="form-control" placeholder="Название" required />
+                </div>
+                <div class="col-md-5">
+                    <select name="Category" class="form-select" required>
+                        <option value="it-skills">IT-skills</option>
+                        <option value="experience">Опыт</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">Добавить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- === ПРОФЕССИИ === -->
+    <div class="tab-pane fade @(activeTab == "professions" ? "show active" : "")" id="professions">
+        <h4>Профессии</h4>
+
+        <form method="get" class="row g-2 mb-3">
+            <input type="hidden" name="tab" value="professions" />
+            <div class="col-md-4">
+                <input type="text" name="professionSearchTerm" class="form-control" placeholder="Название профессии" value="@Model.ProfessionSearchTerm">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="professionCategoryFilter" class="form-control" placeholder="Категория" value="@Model.ProfessionCategoryFilter">
+            </div>
+            <div class="col-md-3">
+                <select name="professionLevelFilter" class="form-select">
+                    <option value="">Все уровни</option>
+                    @foreach (var level in new[] { "Junior", "Middle", "Senior", "Manager" })
+                    {
+                        <option value="@level" selected="@(Model.ProfessionLevelFilter == level)">@level</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Фильтровать</button>
+            </div>
+        </form>
+
+        <div class="table-wrapper overflow-auto">
+            @await Html.PartialAsync("_ProfessionsTable", Model.PagedProfessions)
+        </div>
+        <div class="mt-3">
+            @await Html.PartialAsync("_Pagination", ViewBag.ProfessionPagination as PaginationModel)
+        </div>
+
+        <!-- === ДОБАВЛЕНИЕ ПРОФЕССИИ === -->
+        <hr />
+        <h5>Добавить профессию</h5>
+        <form method="post" asp-action="AddProfession">
+            <div class="row g-2 mb-3">
+                <div class="col-md-4">
+                    <input name="Name" class="form-control" placeholder="Название" required />
+                </div>
+                <div class="col-md-3">
+                    <input name="Category" class="form-control" placeholder="Категория" required />
+                </div>
+                <div class="col-md-3">
+                    <select name="Level" class="form-select" required>
+                        <option value="Junior">Junior</option>
+                        <option value="Middle">Middle</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Manager">Manager</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">Добавить</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- === ПРИВЯЗКА НАВЫКА К ПРОФЕССИИ === -->
+        <h5>Привязать навык к профессии</h5>
+        <form method="post" asp-action="AddSkillToProfession">
+            <div class="row g-2 mb-3">
+                <div class="col-md-5">
+                    <select name="professionId" class="form-select" required>
+                        <option value="">Выберите профессию</option>
+                        @foreach (var prof in Model.Professions)
+                        {
+                            <option value="@prof.Id">@prof.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <select name="skillId" class="form-select" required>
+                        <option value="">Выберите навык</option>
+                        @foreach (var skill in Model.Skills)
+                        {
+                            <option value="@skill.Id">@skill.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">Привязать</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- === СВЯЗИ ПРОФЕССИЙ === -->
+    <div class="tab-pane fade @(activeTab == "relations" ? "show active" : "")" id="relations">
+        <h4>Связи профессий</h4>
+
+        <form method="get" class="row g-2 mb-3">
+            <input type="hidden" name="tab" value="relations" />
+            <div class="col-md-3">
+                <input type="text" name="sourceProfessionFilterName" class="form-control" placeholder="Исходная профессия (название)" value="@Model.SourceProfessionFilterName">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="targetProfessionFilterName" class="form-control" placeholder="Целевая профессия (название)" value="@Model.TargetProfessionFilterName">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="relationTypeFilter" class="form-control" placeholder="Тип связи" value="@Model.RelationTypeFilter">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100">Фильтровать</button>
+            </div>
+        </form>
+
+        <div class="table-wrapper overflow-auto">
+            @await Html.PartialAsync("_RelationsTable", Model.PagedRelations)
+        </div>
+        <div class="mt-3">
+            @await Html.PartialAsync("_Pagination", ViewBag.RelationPagination as PaginationModel)
+        </div>
+
+        <!-- === ДОБАВЛЕНИЕ СВЯЗИ === -->
+        <hr />
+        <h5>Добавить связь</h5>
+        <form method="post" asp-action="AddRelation">
+            <div class="row g-2 mb-3">
+                <div class="col-md-4">
+                    <select name="SourceProfessionId" class="form-select" required>
+                        <option value="">Исходная профессия</option>
+                        @foreach (var p in Model.Professions)
+                        {
+                            <option value="@p.Id">@p.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select name="TargetProfessionId" class="form-select" required>
+                        <option value="">Целевая профессия</option>
+                        @foreach (var p in Model.Professions)
+                        {
+                            <option value="@p.Id">@p.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input name="RelationType" class="form-control" placeholder="Тип связи" required />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">Добавить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .table-wrapper {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+    }
+</style>

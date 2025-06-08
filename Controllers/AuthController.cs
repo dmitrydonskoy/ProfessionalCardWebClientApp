@@ -50,20 +50,15 @@ namespace ProfessionalCardWebClientApp.Controllers
 
         public IActionResult Login()
         {
-            // Инициализация модели
             var model = new LoginModel();
-
-            // Устанавливаем значение для ViewData
             ViewData["Title"] = "Авторизация";
-
-            return View(model); // передаем модель в представление
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            // Если данные введены корректно
             if (ModelState.IsValid)
             {
                 var jsonContent = JsonSerializer.Serialize(model);
@@ -73,15 +68,22 @@ namespace ProfessionalCardWebClientApp.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // 💡 Получаем тело ответа (userId, токен и т.д.)
                     var json = await response.Content.ReadAsStringAsync();
                     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                     var loginResponse = JsonSerializer.Deserialize<LoginResponseDTO>(json, options);
 
-                    // ✅ Сохраняем userId в сессию
+                    // Сохраняем userId и роль в сессию
                     HttpContext.Session.SetInt32("UserId", loginResponse.UserId);
+                    HttpContext.Session.SetString("UserRole", loginResponse.Role);
 
-                    // 🔄 Перенаправляем в профиль
+                    // Проверяем роль
+                    if (loginResponse.Role == "Admin")
+                    {
+                        // Перенаправляем администратора на админ-панель
+                        return RedirectToAction("Index", "UserProfile");
+                    }
+
+                    // Иначе обычного пользователя на профиль
                     return RedirectToAction("Index", "UserProfile");
                 }
 

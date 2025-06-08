@@ -8,24 +8,120 @@
 
 <p><strong>Имя:</strong> @Model.Name</p>
 <p><strong>Email:</strong> @Model.Email</p>
-<p><strong>Текущая профессия:</strong> @Model.CurrentProfession?.Name ?? "Не выбрана"</p>
+
+<hr />
+
+<h3>Текущие профессии:</h3>
+@if (Model.CurrentProfessions.Any())
+{
+    <ul>
+        @foreach (var prof in Model.CurrentProfessions)
+        {
+            <li>
+                <strong>@prof.Name</strong> (@prof.Level) — @prof.Category
+                <form method="post" asp-action="RemoveCurrentProfession" class="d-inline">
+                    <input type="hidden" name="userId" value="@Model.Id" />
+                    <input type="hidden" name="professionId" value="@prof.Id" />
+                    <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Нет текущих профессий</p>
+}
+
+@if (Model.AvailableProfessions.Any())
+{
+    <h4>Добавить новую профессию:</h4>
+    <form method="post" asp-action="AddCurrentProfession">
+        <input type="hidden" name="userId" value="@Model.Id" />
+        <select name="professionId" class="form-select w-50 d-inline">
+            @foreach (var prof in Model.AvailableProfessions)
+            {
+                <option value="@prof.Id">@prof.Name (@prof.Level)</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Добавить</button>
+    </form>
+}
+
+<hr />
+
+<h3>Навыки пользователя:</h3>
+
+@if (Model.UserSkills.Any())
+{
+    <button id="toggle-skills-btn" class="btn btn-outline-secondary btn-sm mb-2" type="button">
+        Скрыть навыки
+    </button>
+
+    <div id="skills-list">
+        <ul>
+            @foreach (var skill in Model.UserSkills)
+            {
+                <li>
+                    <strong>@skill.Name</strong> — @skill.Category
+                    <form method="post" asp-action="RemoveSkill" class="d-inline">
+                        <input type="hidden" name="userId" value="@Model.Id" />
+                        <input type="hidden" name="skillId" value="@skill.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                    </form>
+                </li>
+            }
+        </ul>
+    </div>
+}
+else
+{
+    <p>Навыки отсутствуют</p>
+}
+
+@if (Model.AvailableSkills.Any())
+{
+    <h4>Добавить новый навык:</h4>
+    <form method="post" asp-action="AddSkill">
+        <input type="hidden" name="userId" value="@Model.Id" />
+        <select name="skillId" class="form-select w-50 d-inline">
+            @foreach (var skill in Model.AvailableSkills)
+            {
+                <option value="@skill.Id">@skill.Name</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Добавить</button>
+    </form>
+}
+
+<hr />
 
 <h3>Избранные профессии:</h3>
-@if (Model.FavoriteProfessions != null && Model.FavoriteProfessions.Any())
+
+@if (Model.FavoriteProfessions.Any())
 {
     <div class="row">
-        @foreach (var profession in Model.FavoriteProfessions)
+        @foreach (var prof in Model.FavoriteProfessions)
         {
-            <div class="col-md-4">
-                <div class="card mb-3">
+            <div class="col-md-4 mb-3">
+                <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">@profession.Name</h5>
-                        <p class="card-text"><strong>Категория:</strong> @profession.Category</p>
-                        <form method="post" asp-action="RemoveFromFavorites">
-                            <input type="hidden" name="userId" value="@Model.Id" />
-                            <input type="hidden" name="professionId" value="@profession.Id" />
-                            <button type="submit" class="btn btn-danger">Удалить</button>
-                        </form>
+                        <h5>@prof.Name</h5>
+                        <p>Категория: @prof.Category</p>
+                        <p>Прогресс: @prof.ProgressPercentage%</p>
+
+                        <div class="d-flex justify-content-between">
+                            <form method="post" asp-action="RemoveFromFavorites">
+                                <input type="hidden" name="userId" value="@Model.Id" />
+                                <input type="hidden" name="professionId" value="@prof.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                            </form>
+
+                            <form method="get" asp-controller="Career" asp-action="GenerateFromFavorite">
+                                <input type="hidden" name="professionId" value="@prof.Id" />
+                                <button type="submit" class="btn btn-primary btn-sm">Открыть путь</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -35,4 +131,15 @@
 else
 {
     <p>Избранных профессий нет.</p>
+}
+@section Scripts {
+    <script>
+        document.getElementById("toggle-skills-btn")?.addEventListener("click", function () {
+            const skillsList = document.getElementById("skills-list");
+            const isVisible = skillsList.style.display !== "none";
+
+            skillsList.style.display = isVisible ? "none" : "block";
+            this.textContent = isVisible ? "Показать навыки" : "Скрыть навыки";
+        });
+    </script>
 }

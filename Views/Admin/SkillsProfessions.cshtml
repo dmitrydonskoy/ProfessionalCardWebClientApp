@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Управление навыками и профессиями";
+}
+
+<h2>Добавить Навык</h2>
+
+<form asp-action="AddSkill" method="post">
+    <div class="form-group">
+        <label for="SkillName">Название навыка</label>
+        <input type="text" class="form-control" id="SkillName" name="Name" placeholder="Введите название навыка" required />
+    </div>
+    <div class="form-group">
+        <label for="SkillDescription">Описание навыка</label>
+        <input type="text" class="form-control" id="SkillDescription" name="Description" placeholder="Введите описание" />
+    </div>
+    <div class="form-group">
+        <label for="SkillCategory">Категория навыка</label>
+        <input type="text" class="form-control" id="SkillCategory" name="Category" placeholder="Введите категорию" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Добавить Навык</button>
+</form>
+
+<hr />
+
+<h2>Добавить Профессию</h2>
+
+<form asp-action="AddProfession" method="post">
+    <div class="form-group">
+        <label for="ProfessionName">Название профессии</label>
+        <input type="text" class="form-control" id="ProfessionName" name="Name" placeholder="Введите название профессии" required />
+    </div>
+    <div class="form-group">
+        <label for="ProfessionDescription">Описание профессии</label>
+        <input type="text" class="form-control" id="ProfessionDescription" name="Description" placeholder="Введите описание" />
+    </div>
+    <div class="form-group">
+        <label for="ProfessionCategory">Категория профессии</label>
+        <input type="text" class="form-control" id="ProfessionCategory" name="Category" placeholder="Введите категорию" />
+    </div>
+    <div class="form-group">
+        <label for="ProfessionLevel">Уровень профессии</label>
+        <input type="number" class="form-control" id="ProfessionLevel" name="Level" placeholder="Введите уровень" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Добавить Профессию</button>
+</form>

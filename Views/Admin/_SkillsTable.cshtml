@@ -1,0 +1,28 @@
+﻿@model IEnumerable<ProfessionalCardWebClientApp.DTO.SkillDTO>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Категория</th>
+            <th class="text-center">Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var skill in Model)
+        {
+            <tr>
+                <td>@skill.Id</td>
+                <td>@skill.Name</td>
+                <td>@skill.Category</td>
+                <td class="text-center">
+                    <form method="post" asp-action="DeleteSkill" class="d-inline">
+                        <input type="hidden" name="id" value="@skill.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

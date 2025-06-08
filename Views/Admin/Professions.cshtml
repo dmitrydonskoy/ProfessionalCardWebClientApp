@@ -1,0 +1,51 @@
+﻿@using ProfessionalCardWebClientApp.DTO;
+@model List<ProfessionDTO>
+@{
+    ViewData["Title"] = "Управление профессиями";
+}
+
+<h2>Профессии</h2>
+
+<form method="post" asp-action="AddProfession">
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <input type="text" name="Name" class="form-control" placeholder="Название" required />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="Level" class="form-control" placeholder="Уровень (Junior, Middle...)" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="Category" class="form-control" placeholder="Категория" />
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-success">Добавить</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Уровень</th>
+            <th>Категория</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var prof in Model)
+        {
+            <tr>
+                <td>@prof.Name</td>
+                <td>@prof.Level</td>
+                <td>@prof.Category</td>
+                <td>
+                    <form method="post" asp-action="DeleteProfession">
+                        <input type="hidden" name="id" value="@prof.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
