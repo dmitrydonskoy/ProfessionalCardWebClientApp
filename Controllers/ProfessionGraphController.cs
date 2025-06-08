@@ -45,5 +45,26 @@ namespace ProfessionalCardWebClientApp.Controllers
             
             return View(professionGraph);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetSkillsPartial(int id)
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            var response = await _httpClient.GetAsync($"https://localhost:7212/api/profession/{id}/skills");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return PartialView("_SkillsPartial", new List<SkillDTO>());
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var skills = JsonSerializer.Deserialize<List<SkillDTO>>(json, options);
+
+            return PartialView("_SkillsPartial", skills ?? new List<SkillDTO>());
+        }
     }
 }

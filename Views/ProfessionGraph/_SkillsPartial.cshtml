@@ -1,0 +1,23 @@
+﻿@using ProfessionalCardWebClientApp.DTO;
+@model List<SkillDTO>
+
+@{
+    var itSkills = Model.Where(s => s.Category == "IT-skills").ToList();
+}
+
+@if (!itSkills.Any())
+{
+    <p class="text-muted">IT-навыки не найдены.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var skill in itSkills)
+        {
+            <li class="list-group-item">
+                <strong>@skill.Name</strong><br />
+                <small>@skill.Description</small>
+            </li>
+        }
+    </ul>
+}

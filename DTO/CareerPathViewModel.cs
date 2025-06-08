@@ -7,6 +7,7 @@
         public int? SelectedCurrentProfessionId { get; set; }
         public string? SelectedCurrentProfessionLevel { get; set; }
         public string? SelectedCurrentProfessionName { get; set; } = null;
-        public CareerPathDTO? CareerPath { get; set; }
+        public CareerPathResponse CareerPath { get; set; }
+        public bool IsPersonalizedComparison { get; set; } = false;
     }
 }
