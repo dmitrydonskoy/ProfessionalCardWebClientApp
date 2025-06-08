@@ -1,8 +1,40 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Главная";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Карта профессий</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4 mb-3">Добро пожаловать на платформу профессионального развития</h1>
+        <p class="lead mb-5">
+            Здесь вы можете исследовать карьерные пути, узнать, какие навыки вам нужны, и построить план развития в IT-сфере.
+        </p>
+    </div>
+
+    <div class="row text-center justify-content-center">
+        <div class="col-md-5 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <h4 class="card-title">🔍 Карта профессий</h4>
+                    <p class="card-text">Исследуйте все доступные профессии, их уровни и необходимые навыки.</p>
+                    <a href="/ProfessionGraph" class="btn btn-primary mt-2">Перейти</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <h4 class="card-title">📈 Карта карьерного пути</h4>
+                    <p class="card-text">Сравните ваши навыки с выбранной целью и получите персональную карьерную карту.</p>
+                    <a href="/Career" class="btn btn-success mt-2">Начать</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 text-center text-muted small">
+        &copy; @DateTime.Now.Year Платформа профессионального развития. Все права защищены.
+    </div>
 </div>

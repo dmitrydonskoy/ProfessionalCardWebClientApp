@@ -1,0 +1,30 @@
+﻿
+@model ProfessionalCardWebClientApp.DTO.LoginModel
+
+<h2>Авторизация</h2>
+
+@if (ViewContext.ModelState.IsValid == false)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in ViewContext.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<form method="post">
+    <div class="form-group">
+        <label for="Email">Электронная почта</label>
+        <input type="email" class="form-control" id="Email" name="Email" value="@Model?.Email" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Password">Пароль</label>
+        <input type="password" class="form-control" id="Password" name="Password" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Войти</button>
+</form>
